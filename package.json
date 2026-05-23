@@ -1,0 +1,12 @@
+{
+  "name": "student-portal",
+  "version": "1.0.0",
+  "description": "Student Portal with Node.js and Express",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

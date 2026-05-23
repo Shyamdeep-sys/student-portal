@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELLENKI Student Portal - Home</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .welcome-container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        .portal-header {
+            margin-bottom: 3rem;
+        }
+        .portal-logo-glow {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-grad);
+            border-radius: var(--radius-md);
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-glow);
+            animation: pulse 2s infinite;
+        }
+        .portal-logo-glow svg {
+            width: 40px;
+            height: 40px;
+            fill: #ffffff;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(0, 198, 251, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 35px rgba(0, 198, 251, 0.8), 0 0 15px rgba(0, 242, 254, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 0 20px rgba(0, 198, 251, 0.4); }
+        }
+        .subtitle {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 1rem auto 0;
+            line-height: 1.6;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        .portal-card {
+            padding: 2.5rem 2rem;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 320px;
+            position: relative;
+            overflow: hidden;
+        }
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary-grad);
+        }
+        .portal-card.admin::before {
+            background: var(--success-grad);
+        }
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .card-title svg {
+            width: 24px;
+            height: 24px;
+        }
+        .card-desc {
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+        .footer-note {
+            margin-top: 3rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-container glass-panel animate-fade-in">
+        <div class="portal-header">
+            <div class="portal-logo-glow">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.5L12 15.82l6.11-3.32L12 9.18 5.89 12.5z"/>
+                </svg>
+            </div>
+            <h1>ELLENKI STUDENT PORTAL</h1>
+            <p class="subtitle">A secure digital workspace for institutional notices, document distribution, academic spreadsheets, and communication between faculty and students.</p>
+        </div>
+
+        <div class="card-grid">
+            <!-- Student Portal Card -->
+            <div class="portal-card glass-panel">
+                <div>
+                    <h3 class="card-title" style="color: var(--primary);">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                        </svg>
+                        Student Portal
+                    </h3>
+                    <p class="card-desc">Log in using your C7 Series Roll Number (e.g. 24C71A05I8) to access your dashboard, schedules, results, announcement feeds, and downloadable academic resources.</p>
+                </div>
+                <a href="/student-login" class="btn btn-primary">
+                    Access Dashboard
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+
+            <!-- Admin Portal Card -->
+            <div class="portal-card admin glass-panel">
+                <div>
+                    <h3 class="card-title" style="color: var(--success);">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        Faculty Panel
+                    </h3>
+                    <p class="card-desc">For Principals, HODs, and Faculty. Verification is required via ID Card upload. Upload schedules, grades, notifications, photos, PDFs, or Word documents instantly.</p>
+                </div>
+                <a href="/admin-login" class="btn btn-success">
+                    Admin / Faculty Portal
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            &copy; 2026 ELLENKI COLLEGE. ALL RIGHTS RESERVED. IN ENGLISH.
+        </div>
+    </div>
+</body>
+</html>

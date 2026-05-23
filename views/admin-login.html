@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELLENKI Faculty & Admin Login</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .auth-container {
+            max-width: 450px;
+            width: 100%;
+            padding: 2.5rem 2rem;
+            position: relative;
+        }
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--success-grad);
+            border-top-left-radius: var(--radius-md);
+            border-top-right-radius: var(--radius-md);
+        }
+        .header-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .header-title h2 {
+            font-size: 1.8rem;
+            background: var(--success-grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .header-title p {
+            font-size: 0.9rem;
+        }
+        .stage-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .stage-indicator::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.08);
+            z-index: 1;
+        }
+        .stage-step {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #12182b;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            position: relative;
+            z-index: 2;
+            transition: var(--transition);
+        }
+        .stage-step.active {
+            border-color: var(--success);
+            color: #ffffff;
+            background: var(--success-grad);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        }
+        .stage-step.completed {
+            border-color: var(--success);
+            color: #ffffff;
+            background: var(--success);
+        }
+        /* State toggling */
+        .state-panel {
+            display: none;
+        }
+        .state-panel.active {
+            display: block;
+            animation: fadeIn 0.4s ease forwards;
+        }
+        .toggle-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--success);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        .toggle-link:hover {
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+        }
+        .preview-box {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+        .preview-box img {
+            max-width: 40px;
+            max-height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .file-info {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-grow: 1;
+        }
+        .back-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            gap: 0.25rem;
+        }
+        .back-link:hover {
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container glass-panel animate-fade-in">
+        <div class="header-title">
+            <h2 id="auth-title-text">Faculty Secure Portal</h2>
+            <p id="auth-desc-text">Verify identity or log in to manage ELLENKI portal listings.</p>
+        </div>
+
+        <!-- STAGE INDICATOR (ONLY FOR REGISTRATION STATE) -->
+        <div class="stage-indicator" id="reg-indicator" style="display: none;">
+            <div class="stage-step active" id="step-badge-1">1</div>
+            <div class="stage-step" id="step-badge-2">2</div>
+        </div>
+
+        <!-- ================= STATE 1: EXISTING LOGIN ================= -->
+        <div class="state-panel active" id="panel-login">
+            <form id="form-login">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="login-username" class="form-input" placeholder="Enter your username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 0.5rem;">
+                    Access Faculty Panel
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </form>
+            <a href="#" class="toggle-link" onclick="switchState('register')">New Faculty? Register & Verify Proof</a>
+        </div>
+
+        <!-- ================= STATE 2: REGISTRATION STAGE 1 (Faculty Proof Upload) ================= -->
+        <div class="state-panel" id="panel-register-stage1">
+            <form id="form-register-stage1">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="reg-name" class="form-input" placeholder="e.g. Dr. Ramesh Kumar" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Designation</label>
+                    <select id="reg-designation" class="form-input" style="background-color: #0d1326;" required>
+                        <option value="" disabled selected>Select your designation</option>
+                        <option value="Principal">Principal</option>
+                        <option value="HOD (CSE)">HOD - Computer Science</option>
+                        <option value="HOD (ECE)">HOD - Electronics & Comm</option>
+                        <option value="HOD (Mech)">HOD - Mechanical</option>
+                        <option value="Faculty Member">Faculty / Assistant Professor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Faculty Email</label>
+                    <input type="email" id="reg-email" class="form-input" placeholder="name@c7inst.edu" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Faculty ID Card Proof</label>
+                    <div class="upload-dropzone" id="dropzone-id">
+                        <div class="upload-icon">📇</div>
+                        <p style="font-size: 0.85rem; font-weight: 600;">Drag ID Card photo here or browse</p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Supports JPG, PNG, PDF</p>
+                        <input type="file" id="reg-proof" accept="image/*,.pdf" required>
+                    </div>
+                    <div class="preview-box" id="proof-preview" style="display: none;">
+                        <span id="preview-media">🗂️</span>
+                        <div class="file-info" id="preview-filename">faculty_id.png</div>
+                        <button type="button" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="resetProof()">Clear</button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 0.5rem;">
+                    Verify & Continue
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </form>
+            <a href="#" class="toggle-link" onclick="switchState('login')">Already registered? Log in here</a>
+        </div>
+
+        <!-- ================= STATE 3: REGISTRATION STAGE 2 (Set Credentials) ================= -->
+        <div class="state-panel" id="panel-register-stage2">
+            <form id="form-register-stage2">
+                <div class="form-group">
+                    <label class="form-label">Choose Username</label>
+                    <input type="text" id="reg-username" class="form-input" placeholder="Create your login username" required>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">This will be used for your subsequent dashboard logins.</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="reg-password" class="form-input" placeholder="Set password" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" id="reg-confirmpass" class="form-input" placeholder="Re-enter password" required>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="prevStage()">
+                        Back
+                    </button>
+                    <button type="submit" class="btn btn-success" style="flex: 2;">
+                        Finalize Account
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <a href="/" class="back-link">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- TOASTS CONTAINER -->
+    <div class="toast-container" id="toast-area"></div>
+
+    <script>
+        // Global Authentication States
+        let currentMode = 'login'; // 'login' | 'register'
+        let currentStage = 1; // 1 | 2 (valid when currentMode === 'register')
+        
+        // Data payload to be sent in Stage 2
+        let registrationPayload = {
+            name: '',
+            designation: '',
+            email: '',
+            proofName: '',
+            proofBase64: ''
+        };
+
+        // DOM elements
+        const titleText = document.getElementById('auth-title-text');
+        const descText = document.getElementById('auth-desc-text');
+        const regIndicator = document.getElementById('reg-indicator');
+        const step1Badge = document.getElementById('step-badge-1');
+        const step2Badge = document.getElementById('step-badge-2');
+        
+        const panelLogin = document.getElementById('panel-login');
+        const panelRegStage1 = document.getElementById('panel-register-stage1');
+        const panelRegStage2 = document.getElementById('panel-register-stage2');
+        
+        const fileInput = document.getElementById('reg-proof');
+        const dropzone = document.getElementById('dropzone-id');
+        const proofPreview = document.getElementById('proof-preview');
+        const previewFilename = document.getElementById('preview-filename');
+        const previewMedia = document.getElementById('preview-media');
+
+        // Toast Helper
+        function showToast(message, type = 'success') {
+            const toastArea = document.getElementById('toast-area');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${type === 'success' ? '✅' : '❌'}</span>
+                <div>${message}</div>
+            `;
+            toastArea.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) reverse forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // State Machine Switch
+        function switchState(mode) {
+            currentMode = mode;
+            panelLogin.classList.remove('active');
+            panelRegStage1.classList.remove('active');
+            panelRegStage2.classList.remove('active');
+            
+            if (mode === 'login') {
+                titleText.innerText = "Faculty Secure Portal";
+                descText.innerText = "Verify identity or log in to manage ELLENKI portal listings.";
+                regIndicator.style.display = 'none';
+                panelLogin.classList.add('active');
+            } else {
+                currentStage = 1;
+                titleText.innerText = "Faculty Verification";
+                descText.innerText = "Stage 1: Submit verification details & Faculty ID Card.";
+                regIndicator.style.display = 'flex';
+                step1Badge.className = "stage-step active";
+                step2Badge.className = "stage-step";
+                panelRegStage1.classList.add('active');
+            }
+        }
+
+        // File Handler & Base64 Converter
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    registrationPayload.proofBase64 = evt.target.result;
+                    registrationPayload.proofName = file.name;
+                    
+                    previewFilename.innerText = file.name;
+                    if (file.type.startsWith('image/')) {
+                        previewMedia.innerHTML = `<img src="${evt.target.result}" alt="Proof Preview">`;
+                    } else {
+                        previewMedia.innerHTML = `📄`;
+                    }
+                    dropzone.style.display = 'none';
+                    proofPreview.style.display = 'flex';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function resetProof() {
+            fileInput.value = '';
+            registrationPayload.proofBase64 = '';
+            registrationPayload.proofName = '';
+            dropzone.style.display = 'block';
+            proofPreview.style.display = 'none';
+        }
+
+        // Drag & Drop
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = 'var(--success)';
+        });
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+        });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                fileInput.files = e.dataTransfer.files;
+                const event = new Event('change');
+                fileInput.dispatchEvent(event);
+            }
+        });
+
+        // Submit Stage 1 Details
+        document.getElementById('form-register-stage1').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!registrationPayload.proofBase64) {
+                showToast("Please upload your Faculty ID card proof first.", "danger");
+                return;
+            }
+            
+            // Collect Stage 1 Info
+            registrationPayload.name = document.getElementById('reg-name').value;
+            registrationPayload.designation = document.getElementById('reg-designation').value;
+            registrationPayload.email = document.getElementById('reg-email').value;
+
+            // Transition to Stage 2
+            currentStage = 2;
+            titleText.innerText = "Create Faculty Account";
+            descText.innerText = "Stage 2: Setup your portal username and secure password.";
+            step1Badge.className = "stage-step completed";
+            step2Badge.className = "stage-step active";
+            
+            panelRegStage1.classList.remove('active');
+            panelRegStage2.classList.add('active');
+        });
+
+        // Go back to Stage 1 from Stage 2
+        function prevStage() {
+            currentStage = 1;
+            titleText.innerText = "Faculty Verification";
+            descText.innerText = "Stage 1: Submit verification details & Faculty ID Card.";
+            step1Badge.className = "stage-step active";
+            step2Badge.className = "stage-step";
+            
+            panelRegStage2.classList.remove('active');
+            panelRegStage1.classList.add('active');
+        }
+
+        // Submit Stage 2 & Save Admin account
+        document.getElementById('form-register-stage2').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirmPass = document.getElementById('reg-confirmpass').value;
+
+            if (password !== confirmPass) {
+                showToast("Passwords do not match.", "danger");
+                return;
+            }
+
+            const payload = {
+                ...registrationPayload,
+                username,
+                password
+            };
+
+            try {
+                const response = await fetch('/api/admin/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast("Account created & proof verified successfully!", "success");
+                    
+                    // Store credentials in sessionStorage and auto login
+                    sessionStorage.setItem('isAdmin', 'true');
+                    sessionStorage.setItem('adminName', `${payload.name} (${payload.designation})`);
+                    
+                    setTimeout(() => {
+                        window.location.href = '/admin-dashboard';
+                    }, 1500);
+                } else {
+                    showToast(result.message || "Registration failed.", "danger");
+                }
+            } catch (err) {
+                showToast("Network error. Please try again.", "danger");
+            }
+        });
+
+        // Submit Existing Login
+        document.getElementById('form-login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast("Login successful! Welcome back.", "success");
+                    
+                    // Save in session
+                    sessionStorage.setItem('isAdmin', 'true');
+                    sessionStorage.setItem('adminName', `${result.admin.name} (${result.admin.designation})`);
+                    
+                    setTimeout(() => {
+                        window.location.href = '/admin-dashboard';
+                    }, 1200);
+                } else {
+                    showToast(result.message || "Invalid credentials.", "danger");
+                }
+            } catch (err) {
+                showToast("Connection failed.", "danger");
+            }
+        });
+    </script>
+</body>
+</html>

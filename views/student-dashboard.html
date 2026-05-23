@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C7 Student Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .student-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .student-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--primary-grad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 0 10px rgba(0, 198, 251, 0.3);
+        }
+        .filter-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.5rem 1.25rem;
+            font-family: var(--font-outfit);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border-radius: 9999px;
+            transition: var(--transition);
+        }
+        .filter-btn:hover {
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .filter-btn.active {
+            color: #ffffff;
+            border-color: var(--primary);
+            background: rgba(0, 198, 251, 0.15);
+            box-shadow: 0 0 12px rgba(0, 198, 251, 0.2);
+        }
+        .feed-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        /* Document Card styling */
+        .doc-download-card {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+        .doc-download-card:hover {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.02);
+            transform: translateX(4px);
+        }
+        .doc-icon {
+            font-size: 2.2rem;
+            color: #f59e0b;
+        }
+        /* Photo Grid styling */
+        .photo-card {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .photo-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        .photo-media-wrapper {
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            position: relative;
+            background: #050811;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .photo-media-wrapper img {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+            cursor: zoom-in;
+            transition: var(--transition);
+        }
+        .photo-media-wrapper img:hover {
+            transform: scale(1.02);
+        }
+        .photo-details {
+            padding: 1.25rem;
+        }
+        /* Lightbox modal */
+        .lightbox-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 8, 17, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            animation: modalFade 0.3s ease;
+        }
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 80%;
+            object-fit: contain;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: #ffffff;
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: var(--transition);
+        }
+        .lightbox-close:hover {
+            color: var(--danger);
+        }
+        .lightbox-caption {
+            margin-top: 1.5rem;
+            color: var(--text-main);
+            font-family: var(--font-outfit);
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        @keyframes modalFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- SECURITY GUARD -->
+    <script>
+        if (sessionStorage.getItem('isStudent') !== 'true') {
+            alert('Access Denied. Please enter your Roll Number first.');
+            window.location.href = '/student-login';
+        }
+    </script>
+
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <span style="color: var(--primary); font-size: 1.5rem;">🎓</span>
+                <span>C7 Student Feed</span>
+            </div>
+            <div class="sidebar-nav">
+                <a href="#" class="nav-item active">
+                    <span>📡</span> Academic Feed
+                </a>
+                <a href="/" class="nav-item" onclick="logoutStudent()">
+                    <span>🚪</span> Logout
+                </a>
+            </div>
+            <div style="margin-top: auto; font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+                Session: C7 Eligible Student
+            </div>
+        </div>
+
+        <!-- MAIN LAYOUT CONTENT -->
+        <div class="main-content">
+            <div class="dashboard-header">
+                <div>
+                    <h1>Academic Notice Board</h1>
+                    <p>Access tables, documents, photos, and messages shared by faculty and administration.</p>
+                </div>
+                <div class="student-profile">
+                    <div class="student-avatar" id="avatar-initials">S</div>
+                    <div>
+                        <h4 id="student-roll-txt">24C71A05I8</h4>
+                        <p style="font-size: 0.75rem; color: var(--primary);">Series: C7 (Eligible)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIMELINE TIMEFILTER BUTTONS -->
+            <div class="filter-bar animate-fade-in">
+                <button class="filter-btn active" onclick="setFilter('all', this)">All Items</button>
+                <button class="filter-btn" onclick="setFilter('announcement', this)">Announcements</button>
+                <button class="filter-btn" onclick="setFilter('table', this)">Timetables & Tables</button>
+                <button class="filter-btn" onclick="setFilter('document', this)">Lecture Docs</button>
+                <button class="filter-btn" onclick="setFilter('photo', this)">Photo Gallery</button>
+            </div>
+
+            <!-- FEED RESULTS -->
+            <div class="feed-container animate-fade-in" id="portal-feed-view">
+                <!-- Academic feeds dynamically load here -->
+                <div style="text-align: center; padding: 4rem; color: var(--text-muted);">
+                    <span>⏳</span> Loading your academic notice board...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHOTOS LIGHTBOX DIALOG -->
+    <div class="lightbox-modal" id="photo-lightbox" onclick="closeLightbox()">
+        <button class="lightbox-close">&times;</button>
+        <img class="lightbox-content" id="lightbox-img" alt="Zoomed view">
+        <div class="lightbox-caption" id="lightbox-txt">Inauguration</div>
+    </div>
+
+    <script>
+        // Set Profile details
+        const studentRoll = sessionStorage.getItem('studentRoll') || 'STUDENT';
+        document.getElementById('student-roll-txt').innerText = studentRoll;
+        document.getElementById('avatar-initials').innerText = studentRoll.slice(-2); // last two letters/digits
+
+        // Logout
+        function logoutStudent() {
+            sessionStorage.removeItem('isStudent');
+            sessionStorage.removeItem('studentRoll');
+            window.location.href = '/';
+        }
+
+        // Global Variables
+        let allFeedData = [];
+        let activeFilter = 'all';
+
+        // Set category filter and update UI classes
+        function setFilter(category, buttonEl) {
+            activeFilter = category;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            buttonEl.classList.add('active');
+            
+            renderFeed();
+        }
+
+        // Fetch feed records
+        async function fetchFeed() {
+            try {
+                const response = await fetch('/api/portal/data');
+                const result = await response.json();
+                
+                if (result.success) {
+                    allFeedData = result.data;
+                    renderFeed();
+                } else {
+                    document.getElementById('portal-feed-view').innerHTML = `
+                        <div class="glass-panel" style="padding: 3rem; text-align: center; border-color: var(--danger);">
+                            <h3>⚠️ Failed to load announcements</h3>
+                            <p style="margin-top: 0.5rem;">The administration server returned an error. Contact portal HOD.</p>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                document.getElementById('portal-feed-view').innerHTML = `
+                    <div class="glass-panel" style="padding: 3rem; text-align: center; border-color: var(--danger);">
+                        <h3>⚠️ Connection Error</h3>
+                        <p style="margin-top: 0.5rem;">Could not connect to the academic server. Please check if node server is active.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Render Feed with Filter
+        function renderFeed() {
+            const feedView = document.getElementById('portal-feed-view');
+            
+            // Filter list
+            const filteredList = activeFilter === 'all' 
+                ? allFeedData 
+                : allFeedData.filter(item => item.type === activeFilter);
+
+            if (filteredList.length === 0) {
+                feedView.innerHTML = `
+                    <div class="glass-panel" style="padding: 4rem; text-align: center; border-style: dashed;">
+                        <span style="font-size: 2.5rem; display: block; margin-bottom: 1rem;">📭</span>
+                        <h3>No listings found</h3>
+                        <p style="margin-top: 0.5rem; color: var(--text-muted);">No uploads found in category "${activeFilter.toUpperCase()}".</p>
+                    </div>
+                `;
+                return;
+            }
+
+            feedView.innerHTML = '';
+            filteredList.forEach(item => {
+                let cardHtml = '';
+
+                if (item.type === 'announcement') {
+                    // --- ANNOUNCEMENT RENDER ---
+                    cardHtml = `
+                        <div class="timeline-card announcement glass-panel animate-fade-in">
+                            <div class="timeline-card-header">
+                                <h3 style="color: var(--primary);">${item.title}</h3>
+                                <span class="badge badge-info">Announcement</span>
+                            </div>
+                            <div class="timeline-meta">
+                                <span>👤 Shared by ${item.createdBy}</span>
+                                <span>📅 ${item.date}</span>
+                            </div>
+                            <p style="white-space: pre-wrap; color: var(--text-main); font-size: 0.95rem; margin-top: 1rem; line-height: 1.7;">${item.content}</p>
+                        </div>
+                    `;
+                } else if (item.type === 'table') {
+                    // --- INTERACTIVE TABLE RENDER ---
+                    let tableHeadersHtml = '';
+                    item.content.headers.forEach(h => {
+                        tableHeadersHtml += `<th>${h}</th>`;
+                    });
+
+                    let tableRowsHtml = '';
+                    item.content.rows.forEach(row => {
+                        let colsHtml = '';
+                        row.forEach(cell => {
+                            colsHtml += `<td>${cell}</td>`;
+                        });
+                        tableRowsHtml += `<tr>${colsHtml}</tr>`;
+                    });
+
+                    cardHtml = `
+                        <div class="timeline-card table glass-panel animate-fade-in">
+                            <div class="timeline-card-header">
+                                <h3 style="color: var(--success);">${item.title}</h3>
+                                <span class="badge badge-success">Schedule Grid</span>
+                            </div>
+                            <div class="timeline-meta">
+                                <span>👤 Shared by ${item.createdBy}</span>
+                                <span>📅 ${item.date}</span>
+                            </div>
+                            <div class="table-container" style="margin-top: 1rem;">
+                                <table>
+                                    <thead>
+                                        <tr>${tableHeadersHtml}</tr>
+                                    </thead>
+                                    <tbody>
+                                        ${tableRowsHtml}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                } else if (item.type === 'document') {
+                    // --- STUDY DOCUMENT RENDER ---
+                    const downloadName = item.fileName || "Academic_Resource";
+                    cardHtml = `
+                        <div class="timeline-card document glass-panel animate-fade-in">
+                            <div class="timeline-card-header">
+                                <h3 style="color: #f59e0b;">${item.title}</h3>
+                                <span class="badge badge-warning">Document File</span>
+                            </div>
+                            <div class="timeline-meta">
+                                <span>👤 Shared by ${item.createdBy}</span>
+                                <span>📅 ${item.date}</span>
+                            </div>
+                            
+                            <div class="doc-download-card" style="margin-top: 1.25rem;">
+                                <div class="doc-icon">📄</div>
+                                <div style="flex-grow: 1;">
+                                    <div style="font-weight: 600; color: #ffffff; font-size: 0.95rem;">${downloadName}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">Format: Verified Institutional Resource</div>
+                                </div>
+                                <a href="${item.content}" download="${downloadName}" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8rem; background: var(--accent-grad);">
+                                    Download
+                                    <span>⬇️</span>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                } else if (item.type === 'photo') {
+                    // --- PHOTO IMAGE GALLERY RENDER ---
+                    cardHtml = `
+                        <div class="timeline-card photo glass-panel animate-fade-in">
+                            <div class="timeline-card-header">
+                                <h3 style="color: var(--accent);">${item.title}</h3>
+                                <span class="badge badge-info">Photo Gallery</span>
+                            </div>
+                            <div class="timeline-meta">
+                                <span>👤 Shared by ${item.createdBy}</span>
+                                <span>📅 ${item.date}</span>
+                            </div>
+                            
+                            <div class="photo-card" style="margin-top: 1.25rem;">
+                                <div class="photo-media-wrapper">
+                                    <img src="${item.content}" alt="${item.title}" onclick="openLightbox('${item.content}', '${item.title}')">
+                                </div>
+                                <div class="photo-details">
+                                    <div style="display:flex; justify-content: space-between; align-items: center;">
+                                        <p style="font-size: 0.8rem; color: var(--text-muted);">Click photo for HD lightbox zoom</p>
+                                        <a href="${item.content}" download="C7_Gallery_${Date.now()}.png" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+                                            Download Image
+                                            <span>💾</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                feedView.innerHTML += cardHtml;
+            });
+        }
+
+        // --- PHOTOS LIGHTBOX CONTROLLER ---
+        function openLightbox(imgSrc, caption) {
+            const modal = document.getElementById('photo-lightbox');
+            const img = document.getElementById('lightbox-img');
+            const txt = document.getElementById('lightbox-txt');
+            
+            img.src = imgSrc;
+            txt.innerText = caption;
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            document.getElementById('photo-lightbox').style.display = 'none';
+        }
+
+        // Initial setup calls
+        fetchFeed();
+    </script>
+</body>
+</html>

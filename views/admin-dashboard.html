@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELLENKI Faculty Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .admin-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--success-grad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+        .composer-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        @media (min-width: 992px) {
+            .composer-section {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+        .publisher-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            font-family: var(--font-outfit);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+        .tab-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .tab-btn.active {
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        /* Table Creator Grid CSS */
+        .table-creator-workspace {
+            padding: 1.5rem;
+            background: rgba(10, 15, 29, 0.4);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-sm);
+            margin-top: 1rem;
+        }
+        .creator-controls {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .creator-table {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .creator-table input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            padding: 0.25rem;
+            font-family: var(--font-jakarta);
+        }
+        .creator-table input:focus {
+            outline: none;
+            border-bottom: 1px solid var(--success);
+        }
+        .creator-table th input {
+            font-weight: bold;
+            color: var(--success);
+        }
+        .creator-table td {
+            padding: 0.5rem;
+        }
+        .cell-delete-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        /* Dashboard Listings Feed */
+        .feed-listing-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.75rem;
+            transition: var(--transition);
+        }
+        .feed-listing-item:hover {
+            border-color: rgba(16, 185, 129, 0.2);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .feed-item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .feed-item-title {
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 0.95rem;
+        }
+        .feed-item-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        /* Dropzone visual updates */
+        .dropzone-active-preview {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid var(--success);
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- SECURITY GUARD -->
+    <script>
+        if (sessionStorage.getItem('isAdmin') !== 'true') {
+            alert('Access Denied. Please log in first.');
+            window.location.href = '/admin-login';
+        }
+    </script>
+
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <span style="color: var(--success); font-size: 1.5rem;">🎓</span>
+                <span>ELLENKI Faculty Panel</span>
+            </div>
+            <div class="sidebar-nav">
+                <a href="#" class="nav-item active">
+                    <span>📡</span> Dashboard
+                </a>
+                <a href="/" class="nav-item" onclick="logoutAdmin()">
+                    <span>🚪</span> Logout
+                </a>
+            </div>
+            <div style="margin-top: auto; font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+                ELLENKI Secure Admin Session
+            </div>
+        </div>
+
+        <!-- MAIN WINDOW -->
+        <div class="main-content">
+            <div class="dashboard-header">
+                <div>
+                    <h1 style="background: var(--success-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Faculty Dashboard</h1>
+                    <p>Publish schedules, announcements, sheets, and downloadable documents to your students.</p>
+                </div>
+                <div class="admin-profile">
+                    <div class="admin-avatar" id="avatar-initials">F</div>
+                    <div>
+                        <h4 id="profile-name">Faculty Member</h4>
+                        <p style="font-size: 0.75rem;">Status: Authorized Admin</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="composer-section animate-fade-in">
+                <!-- COMPOSER FORMS -->
+                <div class="glass-panel" style="padding: 2rem;">
+                    <div class="publisher-tabs">
+                        <button class="tab-btn active" onclick="switchTab('announcement')">Announcements</button>
+                        <button class="tab-btn" onclick="switchTab('table')">Interactive Table</button>
+                        <button class="tab-btn" onclick="switchTab('document')">Study Docs & PDFs</button>
+                        <button class="tab-btn" onclick="switchTab('photo')">Photo Gallery</button>
+                    </div>
+
+                    <!-- 1. Announcements Form -->
+                    <form id="form-publish-announcement" class="publisher-form">
+                        <div class="form-group">
+                            <label class="form-label">Announcement Title</label>
+                            <input type="text" id="announce-title" class="form-input" placeholder="e.g. End Semester External Lab Timetable" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Message Details (Rich Text)</label>
+                            <textarea id="announce-content" class="form-input" rows="8" placeholder="Type instructions or notice details..." style="resize: vertical;" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            Publish Announcement
+                            <span>🚀</span>
+                        </button>
+                    </form>
+
+                    <!-- 2. Table Creator Form -->
+                    <div id="form-publish-table" class="publisher-form" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Table Title</label>
+                            <input type="text" id="table-title" class="form-input" placeholder="e.g. B.Tech Mid-1 Results (CSE - ELLENKI)">
+                        </div>
+                        <div class="table-creator-workspace">
+                            <h4 style="margin-bottom: 0.75rem; color: var(--success);">Build Custom Table Grid</h4>
+                            <div class="creator-controls">
+                                <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="addCreatorColumn()">+ Add Column</button>
+                                <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="addCreatorRow()">+ Add Row</button>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr id="creator-headers-row">
+                                            <!-- Dynamically injected headers -->
+                                        </tr>
+                                    </thead>
+                                    <tbody id="creator-rows-body">
+                                        <!-- Dynamically injected rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success" style="margin-top: 1.5rem;" onclick="publishCustomTable()">
+                            Publish Table Grid
+                            <span>📊</span>
+                        </button>
+                    </div>
+
+                    <!-- 3. Document / File Publisher -->
+                    <form id="form-publish-document" class="publisher-form" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Document Title</label>
+                            <input type="text" id="doc-title" class="form-input" placeholder="e.g. CSE 3rd Year Lecture Notes - Unit 3" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Select PDF or Word Document File</label>
+                            <div class="upload-dropzone" id="dropzone-doc">
+                                <div class="upload-icon">📂</div>
+                                <p style="font-size: 0.85rem; font-weight: 600;">Drag your document here or browse</p>
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Supports PDF, DOC, DOCX, XLS</p>
+                                <input type="file" id="doc-file-input" accept=".pdf,.doc,.docx,.xls,.xlsx" required>
+                            </div>
+                            <div class="dropzone-active-preview" id="doc-active-preview" style="display: none;">
+                                <span>📄</span>
+                                <div style="flex-grow: 1;">
+                                    <div id="doc-preview-name" style="font-weight: 600; font-size: 0.85rem;">notes.pdf</div>
+                                    <div id="doc-preview-size" style="font-size: 0.75rem; color: var(--text-muted);">Calculating size...</div>
+                                </div>
+                                <button type="button" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="resetDocFile()">Remove</button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            Publish Document
+                            <span>💾</span>
+                        </button>
+                    </form>
+
+                    <!-- 4. Photo Publisher -->
+                    <form id="form-publish-photo" class="publisher-form" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Photo/Gallery Description</label>
+                            <input type="text" id="photo-title" class="form-input" placeholder="e.g. Science Exhibition & Lab Inauguration Ceremony" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Select Photo File</label>
+                            <div class="upload-dropzone" id="dropzone-photo">
+                                <div class="upload-icon">🖼️</div>
+                                <p style="font-size: 0.85rem; font-weight: 600;">Drag photo here or browse</p>
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Supports PNG, JPG, JPEG, WEBP</p>
+                                <input type="file" id="photo-file-input" accept="image/*" required>
+                            </div>
+                            <div class="dropzone-active-preview" id="photo-active-preview" style="display: none;">
+                                <div id="photo-preview-media">🖼️</div>
+                                <div style="flex-grow: 1;">
+                                    <div id="photo-preview-name" style="font-weight: 600; font-size: 0.85rem;">campus.jpg</div>
+                                </div>
+                                <button type="button" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="resetPhotoFile()">Remove</button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            Publish Photo to Gallery
+                            <span>🖼️</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- FEED/LISTINGS STATS -->
+                <div class="glass-panel" style="padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div>
+                        <h3 style="color: var(--success); margin-bottom: 0.5rem;">Live Feed Status</h3>
+                        <p style="font-size: 0.85rem;">Below are the institutional announcements currently visible to students.</p>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;" id="listings-feed-container">
+                        <!-- Feed listings injected here dynamically -->
+                        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <span>⏳</span> Loading current feed items...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOASTS -->
+    <div class="toast-container" id="toast-area"></div>
+
+    <script>
+        // Set Profile details
+        const fullName = sessionStorage.getItem('adminName') || 'Faculty HOD';
+        document.getElementById('profile-name').innerText = fullName;
+        document.getElementById('avatar-initials').innerText = fullName.charAt(0);
+
+        // Global Toast Notification Helper
+        function showToast(message, type = 'success') {
+            const toastArea = document.getElementById('toast-area');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${type === 'success' ? '✅' : '❌'}</span>
+                <div>${message}</div>
+            `;
+            toastArea.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) reverse forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem('isAdmin');
+            sessionStorage.removeItem('adminName');
+            window.location.href = '/';
+        }
+
+        // Tab Switching Logic
+        let activeTab = 'announcement';
+        function switchTab(tabId) {
+            activeTab = tabId;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.publisher-form').forEach(form => form.style.display = 'none');
+            
+            // Find appropriate button and form
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.textContent.toLowerCase().includes(tabId === 'photo' ? 'gallery' : tabId));
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            document.getElementById(`form-publish-${tabId}`).style.display = 'block';
+            showToast(`Switched workspace to ${tabId.toUpperCase()} composer.`, 'success');
+        }
+
+        // --- SECTION 1: ANNOUNCEMENTS PUBLISHING ---
+        document.getElementById('form-publish-announcement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('announce-title').value;
+            const content = document.getElementById('announce-content').value;
+
+            try {
+                const response = await fetch('/api/admin/publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'announcement',
+                        title,
+                        content,
+                        createdBy: fullName
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Announcement published successfully!", "success");
+                    document.getElementById('form-publish-announcement').reset();
+                    loadPortalListings();
+                } else {
+                    showToast(result.message, "danger");
+                }
+            } catch (err) {
+                showToast("Connection failed.", "danger");
+            }
+        });
+
+        // --- SECTION 2: INTERACTIVE TABLE CREATOR WORKSPACE ---
+        let creatorHeaders = ["S.No", "Course Code", "Topic", "Lab Session"];
+        let creatorRows = [
+            ["1", "CS302PC", "Database Systems Practice", "Batch A - Lab 2"],
+            ["2", "CS305PC", "Operating Systems Lab", "Batch B - Lab 4"]
+        ];
+
+        function renderCreatorTable() {
+            const headersRow = document.getElementById('creator-headers-row');
+            const rowsBody = document.getElementById('creator-rows-body');
+            
+            // 1. Render Headers
+            headersRow.innerHTML = '';
+            creatorHeaders.forEach((header, index) => {
+                headersRow.innerHTML += `
+                    <th>
+                        <div style="display: flex; align-items: center; gap: 0.25rem;">
+                            <input type="text" value="${header}" onchange="updateHeader(${index}, this.value)">
+                            <button type="button" class="cell-delete-btn" style="font-size: 0.8rem;" onclick="deleteCreatorColumn(${index})">×</button>
+                        </div>
+                    </th>
+                `;
+            });
+            // Final column for spacer/delete rows
+            headersRow.innerHTML += `<th style="width: 50px; text-align: center;">Act</th>`;
+
+            // 2. Render Rows
+            rowsBody.innerHTML = '';
+            creatorRows.forEach((row, rowIndex) => {
+                let colsHtml = '';
+                row.forEach((cellVal, colIndex) => {
+                    colsHtml += `<td><input type="text" value="${cellVal}" onchange="updateCell(${rowIndex}, ${colIndex}, this.value)"></td>`;
+                });
+                rowsBody.innerHTML += `
+                    <tr>
+                        ${colsHtml}
+                        <td style="text-align: center;"><button type="button" class="cell-delete-btn" onclick="deleteCreatorRow(${rowIndex})">🗑️</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateHeader(index, val) { creatorHeaders[index] = val; }
+        function updateCell(r, c, val) { creatorRows[r][c] = val; }
+
+        function addCreatorColumn() {
+            creatorHeaders.push(`Col ${creatorHeaders.length + 1}`);
+            creatorRows.forEach(row => row.push(""));
+            renderCreatorTable();
+        }
+
+        function addCreatorRow() {
+            const newRow = Array(creatorHeaders.length).fill("");
+            if (newRow.length > 0) newRow[0] = creatorRows.length + 1; // Auto S.No
+            creatorRows.push(newRow);
+            renderCreatorTable();
+        }
+
+        function deleteCreatorColumn(colIndex) {
+            if (creatorHeaders.length <= 1) {
+                showToast("Tables must have at least 1 column.", "danger");
+                return;
+            }
+            creatorHeaders.splice(colIndex, 1);
+            creatorRows.forEach(row => row.splice(colIndex, 1));
+            renderCreatorTable();
+        }
+
+        function deleteCreatorRow(rowIndex) {
+            creatorRows.splice(rowIndex, 1);
+            renderCreatorTable();
+        }
+
+        async function publishCustomTable() {
+            const title = document.getElementById('table-title').value.trim() || "Information Table Grid";
+            if (creatorRows.length === 0) {
+                showToast("Please add at least one row of values.", "danger");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'table',
+                        title,
+                        content: {
+                            headers: creatorHeaders,
+                            rows: creatorRows
+                        },
+                        createdBy: fullName
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Custom table grid successfully published!", "success");
+                    document.getElementById('table-title').value = '';
+                    // Reset grid to defaults
+                    creatorHeaders = ["S.No", "Course Code", "Topic", "Lab Session"];
+                    creatorRows = [
+                        ["1", "CS302PC", "Database Systems Practice", "Batch A - Lab 2"],
+                        ["2", "CS305PC", "Operating Systems Lab", "Batch B - Lab 4"]
+                    ];
+                    renderCreatorTable();
+                    loadPortalListings();
+                } else {
+                    showToast(result.message, "danger");
+                }
+            } catch (err) {
+                showToast("Connection failed.", "danger");
+            }
+        }
+        renderCreatorTable();
+
+        // --- SECTION 3: STUDY DOCUMENTS (PDF/WORD) ---
+        let docFilePayload = { fileName: '', fileType: '', base64: '' };
+        const docFileInput = document.getElementById('doc-file-input');
+        const docDropzone = document.getElementById('dropzone-doc');
+        const docPreview = document.getElementById('doc-active-preview');
+        const docPreviewName = document.getElementById('doc-preview-name');
+        const docPreviewSize = document.getElementById('doc-preview-size');
+
+        docFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    docFilePayload.base64 = evt.target.result;
+                    docFilePayload.fileName = file.name;
+                    docFilePayload.fileType = file.type;
+
+                    docPreviewName.innerText = file.name;
+                    docPreviewSize.innerText = `${(file.size / 1024).toFixed(1)} KB`;
+                    docDropzone.style.display = 'none';
+                    docPreview.style.display = 'flex';
+                    showToast("Document loaded. Ready to publish.", "success");
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function resetDocFile() {
+            docFileInput.value = '';
+            docFilePayload = { fileName: '', fileType: '', base64: '' };
+            docDropzone.style.display = 'block';
+            docPreview.style.display = 'none';
+        }
+
+        document.getElementById('form-publish-document').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('doc-title').value.trim();
+            if (!docFilePayload.base64) {
+                showToast("Please select a file to upload.", "danger");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'document',
+                        title,
+                        content: docFilePayload.base64,
+                        fileName: docFilePayload.fileName,
+                        fileType: docFilePayload.fileType,
+                        createdBy: fullName
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Academic document published!", "success");
+                    document.getElementById('form-publish-document').reset();
+                    resetDocFile();
+                    loadPortalListings();
+                } else {
+                    showToast(result.message, "danger");
+                }
+            } catch (err) {
+                showToast("Upload failed.", "danger");
+            }
+        });
+
+        // --- SECTION 4: PHOTOS GALLERY ---
+        let photoFilePayload = { base64: '' };
+        const photoFileInput = document.getElementById('photo-file-input');
+        const photoDropzone = document.getElementById('dropzone-photo');
+        const photoPreview = document.getElementById('photo-active-preview');
+        const photoPreviewName = document.getElementById('photo-preview-name');
+        const photoPreviewMedia = document.getElementById('photo-preview-media');
+
+        photoFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    photoFilePayload.base64 = evt.target.result;
+                    photoPreviewName.innerText = file.name;
+                    photoPreviewMedia.innerHTML = `<img src="${evt.target.result}" style="max-width:40px; max-height:40px; object-fit:cover; border-radius:4px;" />`;
+                    
+                    photoDropzone.style.display = 'none';
+                    photoPreview.style.display = 'flex';
+                    showToast("Photo loaded successfully.", "success");
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function resetPhotoFile() {
+            photoFileInput.value = '';
+            photoFilePayload = { base64: '' };
+            photoDropzone.style.display = 'block';
+            photoPreview.style.display = 'none';
+        }
+
+        document.getElementById('form-publish-photo').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('photo-title').value.trim();
+            if (!photoFilePayload.base64) {
+                showToast("Please upload a photo.", "danger");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'photo',
+                        title,
+                        content: photoFilePayload.base64,
+                        createdBy: fullName
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Photo added to students gallery feed!", "success");
+                    document.getElementById('form-publish-photo').reset();
+                    resetPhotoFile();
+                    loadPortalListings();
+                } else {
+                    showToast(result.message, "danger");
+                }
+            } catch (err) {
+                showToast("Photo upload failed.", "danger");
+            }
+        });
+
+
+        // --- MANAGE CURRENT ACTIVE PORTAL LISTINGS ---
+        async function loadPortalListings() {
+            const listingsContainer = document.getElementById('listings-feed-container');
+            
+            try {
+                const response = await fetch('/api/portal/data');
+                const result = await response.json();
+                
+                if (result.success && result.data.length > 0) {
+                    listingsContainer.innerHTML = '';
+                    result.data.forEach(item => {
+                        let typeIcon = '📡';
+                        let badgeClass = 'badge-info';
+                        if (item.type === 'table') { typeIcon = '📊'; badgeClass = 'badge-success'; }
+                        else if (item.type === 'document') { typeIcon = '📄'; badgeClass = 'badge-warning'; }
+                        else if (item.type === 'photo') { typeIcon = '🖼️'; badgeClass = 'badge-info'; }
+
+                        listingsContainer.innerHTML += `
+                            <div class="feed-listing-item animate-fade-in">
+                                <div class="feed-item-info">
+                                    <span class="feed-item-title">${typeIcon} ${item.title}</span>
+                                    <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.25rem;">
+                                        <span class="badge ${badgeClass}" style="font-size: 0.6rem;">${item.type}</span>
+                                        <span class="feed-item-meta">By ${item.createdBy} • ${item.date}</span>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-danger" style="padding: 0.35rem 0.6rem; font-size: 0.75rem;" onclick="deletePortalItem('${item.id}')">
+                                    Delete
+                                </button>
+                            </div>
+                        `;
+                    });
+                } else {
+                    listingsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: var(--text-muted); border: 1px dashed var(--border-color); border-radius: var(--radius-sm);">
+                            <span>📭</span> No active published items found on portal. Use the forms to create one!
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                listingsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--danger);">
+                        Failed to load active portal items. Check connection.
+                    </div>
+                `;
+            }
+        }
+
+        async function deletePortalItem(itemId) {
+            if (!confirm("Are you sure you want to delete this listing from the portal? Students will lose access immediately.")) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/publish/${itemId}`, { method: 'DELETE' });
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Listing deleted successfully.", "success");
+                    loadPortalListings();
+                } else {
+                    showToast(result.message, "danger");
+                }
+            } catch (err) {
+                showToast("Deletion failed.", "danger");
+            }
+        }
+
+        // Initial loading calls
+        loadPortalListings();
+    </script>
+</body>
+</html>
