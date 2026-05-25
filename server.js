@@ -60,6 +60,9 @@ app.get('/student-dashboard', (req, res) => {
 
 // --- REST API Endpoints ---
 
+// In-memory OTP storage for forgot password recovery
+const recoveryOTPs = {};
+
 // 1. Admin Registration (Stage 1 + Stage 2 combined on server)
 app.post('/api/admin/register', (req, res) => {
     const { name, designation, email, proofName, proofBase64, username, password } = req.body;
@@ -68,12 +71,23 @@ app.post('/api/admin/register', (req, res) => {
         return res.status(400).json({ success: false, message: "Missing required registration details." });
     }
 
+    // Verify Gmail email requirement
+    if (!email.toLowerCase().endsWith('@gmail.com')) {
+        return res.status(400).json({ success: false, message: "Faculty registration requires a valid @gmail.com address." });
+    }
+
     const db = readDB();
     
     // Check if username already exists
-    const existing = db.admins.find(a => a.username.toLowerCase() === username.toLowerCase());
-    if (existing) {
+    const existingUsername = db.admins.find(a => a.username.toLowerCase() === username.toLowerCase());
+    if (existingUsername) {
         return res.status(400).json({ success: false, message: "Username already exists. Please choose a different one." });
+    }
+
+    // Check if email already exists
+    const existingEmail = db.admins.find(a => a.email && a.email.toLowerCase() === email.toLowerCase());
+    if (existingEmail) {
+        return res.status(400).json({ success: false, message: "Gmail address is already registered." });
     }
 
     // Save admin
@@ -95,28 +109,119 @@ app.post('/api/admin/register', (req, res) => {
 
 // 2. Admin Login
 app.post('/api/admin/login', (req, res) => {
-    const { username, password } = req.body;
+    const { username, password } = req.body; // username represents the Gmail Address entered in login
     
     if (!username || !password) {
-        return res.status(400).json({ success: false, message: "Username and password are required." });
+        return res.status(400).json({ success: false, message: "Gmail address and password are required." });
     }
 
     const db = readDB();
-    const admin = db.admins.find(a => a.username.toLowerCase() === username.toLowerCase() && a.password === password);
+    // Allow login by either matching email (gmail) or username
+    const admin = db.admins.find(a => 
+        ((a.email && a.email.toLowerCase() === username.toLowerCase()) || 
+         (a.username && a.username.toLowerCase() === username.toLowerCase())) && 
+        a.password === password
+    );
     
     if (!admin) {
-        return res.status(401).json({ success: false, message: "Invalid username or password." });
+        return res.status(401).json({ success: false, message: "Invalid Gmail address or password." });
     }
 
     res.json({ 
         success: true, 
-        message: "Login successful!",
+        message: "Step 1 Verification Complete!",
         admin: {
             username: admin.username,
+            email: admin.email,
             name: admin.name,
             designation: admin.designation
         }
     });
+});
+
+// 2b. OTP Password Recovery Initiation
+app.post('/api/admin/forgot-password', (req, res) => {
+    const { gmail } = req.body;
+    if (!gmail) {
+        return res.status(400).json({ success: false, message: "Gmail address is required." });
+    }
+
+    const db = readDB();
+    const admin = db.admins.find(a => a.email && a.email.toLowerCase() === gmail.toLowerCase());
+    if (!admin) {
+        return res.status(404).json({ success: false, message: "This Gmail address is not registered under any Faculty account." });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    recoveryOTPs[gmail.toLowerCase()] = {
+        otp,
+        expires: Date.now() + 10 * 60 * 1000 // 10 minutes expiry
+    };
+
+    // Print OTP to Node console beautifully
+    console.log(`\n\x1b[36m┌────────────────────────────────────────────────────────┐\x1b[0m`);
+    console.log(`\x1b[36m│              ELLENKI PASSWORD RECOVERY OTP             │\x1b[0m`);
+    console.log(`\x1b[36m├────────────────────────────────────────────────────────┤\x1b[0m`);
+    console.log(`\x1b[36m│  Gmail:  %-45s │\x1b[0m`, gmail);
+    console.log(`\x1b[36m│  Username: %-44s │\x1b[0m`, admin.username);
+    console.log(`\x1b[36m│  OTP:    \x1b[1;32m%-45s\x1b[0;36m │\x1b[0m`, otp);
+    console.log(`\x1b[36m└────────────────────────────────────────────────────────┘\n\x1b[0m`);
+
+    res.json({ success: true, message: "Recovery OTP sent to Gmail successfully!", devOtp: otp });
+});
+
+// 2c. OTP Password Recovery Verification
+app.post('/api/admin/verify-otp', (req, res) => {
+    const { gmail, otp } = req.body;
+    if (!gmail || !otp) {
+        return res.status(400).json({ success: false, message: "Gmail and OTP are required." });
+    }
+
+    const record = recoveryOTPs[gmail.toLowerCase()];
+    if (!record) {
+        return res.status(400).json({ success: false, message: "No OTP request found for this Gmail." });
+    }
+
+    if (Date.now() > record.expires) {
+        delete recoveryOTPs[gmail.toLowerCase()];
+        return res.status(400).json({ success: false, message: "OTP has expired. Please request a new one." });
+    }
+
+    if (record.otp !== otp) {
+        return res.status(400).json({ success: false, message: "Incorrect OTP. Please try again." });
+    }
+
+    res.json({ success: true, message: "OTP verified successfully!" });
+});
+
+// 2d. OTP Password Recovery Reset Action
+app.post('/api/admin/reset-password', (req, res) => {
+    const { gmail, otp, newPassword } = req.body;
+    if (!gmail || !otp || !newPassword) {
+        return res.status(400).json({ success: false, message: "Gmail, OTP, and new password are required." });
+    }
+
+    const record = recoveryOTPs[gmail.toLowerCase()];
+    if (!record || record.otp !== otp || Date.now() > record.expires) {
+        return res.status(400).json({ success: false, message: "Invalid or expired OTP session." });
+    }
+
+    const db = readDB();
+    const adminIndex = db.admins.findIndex(a => a.email && a.email.toLowerCase() === gmail.toLowerCase());
+    
+    if (adminIndex === -1) {
+        return res.status(404).json({ success: false, message: "Account not found." });
+    }
+
+    // Update password
+    db.admins[adminIndex].password = newPassword;
+    writeDB(db);
+
+    // Clear OTP record
+    delete recoveryOTPs[gmail.toLowerCase()];
+
+    res.json({ success: true, message: "Password updated successfully! You can now log in." });
 });
 
 // 3. Student Login (Strict checking of C7 series in roll number)
@@ -162,6 +267,13 @@ app.post('/api/admin/publish', (req, res) => {
     }
 
     const db = readDB();
+    const now = new Date();
+    
+    // Construct local ISO date format (YYYY-MM-DD) for clean filtering
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const isoDate = `${year}-${month}-${day}`;
     
     const newRecord = {
         id: "publish_" + Date.now(),
@@ -171,7 +283,8 @@ app.post('/api/admin/publish', (req, res) => {
         fileName: fileName || null,
         fileType: fileType || null,
         createdBy,
-        date: new Date().toLocaleString()
+        date: now.toLocaleString(),
+        isoDate: isoDate
     };
 
     db.portalData.push(newRecord);

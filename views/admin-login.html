@@ -163,8 +163,8 @@
         <div class="state-panel active" id="panel-login">
             <form id="form-login">
                 <div class="form-group">
-                    <label class="form-label">Username</label>
-                    <input type="text" id="login-username" class="form-input" placeholder="Enter your username" required>
+                    <label class="form-label">Gmail Address</label>
+                    <input type="email" id="login-username" class="form-input" placeholder="yourname@gmail.com" pattern="[a-zA-Z0-9._%+-]+@gmail\.com" title="Please enter a valid Gmail address (ending in @gmail.com)" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Password</label>
@@ -175,7 +175,68 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </button>
             </form>
-            <a href="#" class="toggle-link" onclick="switchState('register')">New Faculty? Register & Verify Proof</a>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem; text-align: center;">
+                <a href="#" class="toggle-link" style="margin-top: 0;" onclick="switchState('forgot-password')">Forgot Password? Recover Account</a>
+                <a href="#" class="toggle-link" style="margin-top: 0;" onclick="switchState('register')">New Faculty? Register & Verify Proof</a>
+            </div>
+        </div>
+
+        <!-- ================= STATE 1B: PASSWORD RECOVERY ================= -->
+        <div class="state-panel" id="panel-forgot-password" style="display: none;">
+            <!-- Gmail input form -->
+            <form id="form-forgot-email">
+                <div class="form-group">
+                    <label class="form-label">Enter Registered Gmail</label>
+                    <input type="email" id="forgot-gmail" class="form-input" placeholder="yourname@gmail.com" pattern="[a-zA-Z0-9._%+-]+@gmail\.com" title="Must be a valid @gmail.com address" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Send Verification OTP
+                    <span>✉️</span>
+                </button>
+            </form>
+
+            <!-- OTP and New Password Verification form -->
+            <form id="form-forgot-reset" style="display: none; margin-top: 1.25rem;">
+                <div class="form-group">
+                    <label class="form-label">Enter 6-Digit OTP</label>
+                    <input type="text" id="forgot-otp" class="form-input" placeholder="e.g. 123456" maxlength="6" pattern="\d{6}" title="Must be a 6-digit number" required>
+                    <!-- Developer helper badge -->
+                    <div id="dev-otp-display" class="dev-otp-badge" style="display: none;">[DEV ASSIST] OTP: <span id="dev-otp-val">******</span></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <input type="password" id="forgot-newpass" class="form-input" placeholder="Set new password" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" id="forgot-confirmpass" class="form-input" placeholder="Re-enter password" required>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">
+                    Reset Password
+                    <span>🔑</span>
+                </button>
+            </form>
+            <a href="#" class="toggle-link" onclick="switchState('login')">Return to Login Screen</a>
+        </div>
+
+        <!-- ================= STATE 1C: STEP 2 SECURE BIOMETRIC LOGIN ================= -->
+        <div class="state-panel" id="panel-biometric" style="display: none;">
+            <div class="biometric-sensor-container animate-fade-in">
+                <div class="biometric-sensor-ring" id="biometric-trigger" onmousedown="startBiometricScan()" onmouseup="stopBiometricScan()" onmouseleave="stopBiometricScan()" ontouchstart="startBiometricScan(event)" ontouchend="stopBiometricScan()">
+                    <!-- Fingerprint SVG Icon -->
+                    <svg class="biometric-sensor-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.66 0 3 1.34 3 3v1.9l2.9 2.9c.1.4.1.8.1 1.2 0 1.55-.77 2.94-1.9 3.49z"/>
+                    </svg>
+                </div>
+                <h3 style="color: var(--success); font-size: 1.25rem;" id="biometric-header">Step 2: Biometric Verification</h3>
+                <p id="biometric-desc" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.5;">
+                    Security level: HIGH. Place your finger on the sensor above and <b>HOLD</b> to scan your fingerprint.
+                </p>
+                <div class="biometric-progress-bar">
+                    <div class="biometric-progress-fill" id="biometric-progress"></div>
+                </div>
+            </div>
+            <a href="#" class="toggle-link" onclick="cancelBiometric()">Cancel Secure Login</a>
         </div>
 
         <!-- ================= STATE 2: REGISTRATION STAGE 1 (Faculty Proof Upload) ================= -->
@@ -197,20 +258,24 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Faculty Email</label>
-                    <input type="email" id="reg-email" class="form-input" placeholder="name@c7inst.edu" required>
+                    <label class="form-label">Gmail Address</label>
+                    <input type="email" id="reg-email" class="form-input" placeholder="yourname@gmail.com" pattern="[a-zA-Z0-9._%+-]+@gmail\.com" title="Must end in @gmail.com" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Faculty ID Card Proof</label>
+                    <label class="form-label">Faculty ID Card Proof (Check Ellenki College Affiliation)</label>
                     <div class="upload-dropzone" id="dropzone-id">
                         <div class="upload-icon">📇</div>
                         <p style="font-size: 0.85rem; font-weight: 600;">Drag ID Card photo here or browse</p>
                         <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Supports JPG, PNG, PDF</p>
                         <input type="file" id="reg-proof" accept="image/*,.pdf" required>
                     </div>
-                    <div class="preview-box" id="proof-preview" style="display: none;">
+                    
+                    <!-- Scan laser HUD container wrapper -->
+                    <div class="preview-box scanner-hud-container" id="proof-preview" style="display: none; padding: 1.5rem 1rem;">
+                        <div class="scanner-hud-laser" id="hud-laser" style="display: none;"></div>
+                        <div class="scanner-status-badge" id="hud-status" style="display: none;">AI SCANNER: ACTIVE</div>
                         <span id="preview-media">🗂️</span>
-                        <div class="file-info" id="preview-filename">faculty_id.png</div>
+                        <div class="file-info" id="preview-filename" style="font-weight: 600; color: #ffffff;">faculty_id.png</div>
                         <button type="button" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="resetProof()">Clear</button>
                     </div>
                 </div>
@@ -228,7 +293,7 @@
                 <div class="form-group">
                     <label class="form-label">Choose Username</label>
                     <input type="text" id="reg-username" class="form-input" placeholder="Create your login username" required>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">This will be used for your subsequent dashboard logins.</p>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">This username can also be recovered if you forget your password.</p>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Password</label>
@@ -261,8 +326,10 @@
 
     <script>
         // Global Authentication States
-        let currentMode = 'login'; // 'login' | 'register'
+        let currentMode = 'login'; // 'login' | 'register' | 'forgot-password' | 'biometric'
         let currentStage = 1; // 1 | 2 (valid when currentMode === 'register')
+        let idAffiliationVerified = false; // set upon scan complete
+        let pendingAdminSession = null; // store admin name & designation during step 1 login
         
         // Data payload to be sent in Stage 2
         let registrationPayload = {
@@ -273,6 +340,10 @@
             proofBase64: ''
         };
 
+        // Biometric Hold Timer variables
+        let biometricHoldInterval = null;
+        let biometricProgress = 0;
+
         // DOM elements
         const titleText = document.getElementById('auth-title-text');
         const descText = document.getElementById('auth-desc-text');
@@ -281,6 +352,8 @@
         const step2Badge = document.getElementById('step-badge-2');
         
         const panelLogin = document.getElementById('panel-login');
+        const panelForgot = document.getElementById('panel-forgot-password');
+        const panelBiometric = document.getElementById('panel-biometric');
         const panelRegStage1 = document.getElementById('panel-register-stage1');
         const panelRegStage2 = document.getElementById('panel-register-stage2');
         
@@ -289,6 +362,9 @@
         const proofPreview = document.getElementById('proof-preview');
         const previewFilename = document.getElementById('preview-filename');
         const previewMedia = document.getElementById('preview-media');
+        
+        const hudLaser = document.getElementById('hud-laser');
+        const hudStatus = document.getElementById('hud-status');
 
         // Toast Helper
         function showToast(message, type = 'success') {
@@ -309,16 +385,34 @@
         // State Machine Switch
         function switchState(mode) {
             currentMode = mode;
-            panelLogin.classList.remove('active');
+            panelLogin.style.display = 'none';
+            panelForgot.style.display = 'none';
+            panelBiometric.style.display = 'none';
             panelRegStage1.classList.remove('active');
             panelRegStage2.classList.remove('active');
+            regIndicator.style.display = 'none';
             
             if (mode === 'login') {
                 titleText.innerText = "Faculty Secure Portal";
                 descText.innerText = "Verify identity or log in to manage ELLENKI portal listings.";
-                regIndicator.style.display = 'none';
-                panelLogin.classList.add('active');
-            } else {
+                panelLogin.style.display = 'block';
+            } else if (mode === 'forgot-password') {
+                titleText.innerText = "Password Recovery";
+                descText.innerText = "Verify your Gmail address to receive an OTP and reset credentials.";
+                panelForgot.style.display = 'block';
+                document.getElementById('form-forgot-email').style.display = 'block';
+                document.getElementById('form-forgot-reset').style.display = 'none';
+                document.getElementById('forgot-gmail').value = '';
+                document.getElementById('forgot-otp').value = '';
+                document.getElementById('forgot-newpass').value = '';
+                document.getElementById('forgot-confirmpass').value = '';
+                document.getElementById('dev-otp-display').style.display = 'none';
+            } else if (mode === 'biometric') {
+                titleText.innerText = "Biometric Verification";
+                descText.innerText = "Secure Step 2 Login. Place your finger on the sensor.";
+                panelBiometric.style.display = 'block';
+                resetBiometricProgress();
+            } else if (mode === 'register') {
                 currentStage = 1;
                 titleText.innerText = "Faculty Verification";
                 descText.innerText = "Stage 1: Submit verification details & Faculty ID Card.";
@@ -329,7 +423,7 @@
             }
         }
 
-        // File Handler & Base64 Converter
+        // File Handler & Simulated OCR Laser Affiliation Scan
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -340,12 +434,50 @@
                     
                     previewFilename.innerText = file.name;
                     if (file.type.startsWith('image/')) {
-                        previewMedia.innerHTML = `<img src="${evt.target.result}" alt="Proof Preview">`;
+                        previewMedia.innerHTML = `<img src="${evt.target.result}" alt="Proof Preview" style="max-height: 80px; border-radius: 4px;">`;
                     } else {
                         previewMedia.innerHTML = `📄`;
                     }
+                    
                     dropzone.style.display = 'none';
                     proofPreview.style.display = 'flex';
+
+                    // Run high-tech scanning laser sweep HUD simulation
+                    idAffiliationVerified = false;
+                    hudLaser.style.display = 'block';
+                    hudStatus.style.display = 'block';
+                    hudStatus.innerText = "AI SCANNER: DETECTING...";
+                    hudStatus.style.borderColor = "var(--primary)";
+                    hudStatus.style.color = "var(--primary)";
+                    
+                    setTimeout(() => {
+                        hudStatus.innerText = "AI SCANNER: EXTRACTING TEXT...";
+                    }, 800);
+
+                    setTimeout(() => {
+                        hudStatus.innerText = "AI SCANNER: CREDENTIAL CHECK...";
+                        
+                        // Parse filename for Ellenki / Elleki college affiliation
+                        const nameLower = file.name.toLowerCase();
+                        const isAffiliated = nameLower.includes('ellenki') || nameLower.includes('elleki') || nameLower.includes('college');
+                        
+                        setTimeout(() => {
+                            hudLaser.style.display = 'none';
+                            if (isAffiliated) {
+                                idAffiliationVerified = true;
+                                hudStatus.innerText = "AI SCANNER: VERIFIED (ELLENKI)";
+                                hudStatus.style.borderColor = "var(--success)";
+                                hudStatus.style.color = "var(--success)";
+                                showToast("Affiliation Check: ELLENKI COLLEGE credential verified successfully!", "success");
+                            } else {
+                                idAffiliationVerified = false;
+                                hudStatus.innerText = "AI SCANNER: REJECTED";
+                                hudStatus.style.borderColor = "var(--danger)";
+                                hudStatus.style.color = "var(--danger)";
+                                showToast("Verification Error: No institutional affiliation (Ellenki/Elleki) found in uploaded card file.", "danger");
+                            }
+                        }, 1000);
+                    }, 1600);
                 };
                 reader.readAsDataURL(file);
             }
@@ -355,8 +487,11 @@
             fileInput.value = '';
             registrationPayload.proofBase64 = '';
             registrationPayload.proofName = '';
+            idAffiliationVerified = false;
             dropzone.style.display = 'block';
             proofPreview.style.display = 'none';
+            hudLaser.style.display = 'none';
+            hudStatus.style.display = 'none';
         }
 
         // Drag & Drop
@@ -383,6 +518,10 @@
             e.preventDefault();
             if (!registrationPayload.proofBase64) {
                 showToast("Please upload your Faculty ID card proof first.", "danger");
+                return;
+            }
+            if (!idAffiliationVerified) {
+                showToast("Access Restricted: Uploaded ID card must contain official affiliation with Ellenki/Elleki College.", "danger");
                 return;
             }
             
@@ -441,7 +580,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showToast("Account created & proof verified successfully!", "success");
+                    showToast("Account created & Ellenki affiliation verified successfully!", "success");
                     
                     // Store credentials in sessionStorage and auto login
                     sessionStorage.setItem('isAdmin', 'true');
@@ -458,7 +597,7 @@
             }
         });
 
-        // Submit Existing Login
+        // Submit Existing Login (Step 1 of 2)
         document.getElementById('form-login').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('login-username').value.trim();
@@ -473,20 +612,166 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showToast("Login successful! Welcome back.", "success");
+                    showToast("Credentials accepted. Proceeding to Biometric Check.", "success");
                     
-                    // Save in session
-                    sessionStorage.setItem('isAdmin', 'true');
-                    sessionStorage.setItem('adminName', `${result.admin.name} (${result.admin.designation})`);
-                    
+                    // Store details in temporary container to wait for biometric verify
+                    pendingAdminSession = {
+                        name: result.admin.name,
+                        designation: result.admin.designation
+                    };
+
+                    // Switch screen to simulated fingerprint scan modal
                     setTimeout(() => {
-                        window.location.href = '/admin-dashboard';
-                    }, 1200);
+                        switchState('biometric');
+                    }, 800);
                 } else {
                     showToast(result.message || "Invalid credentials.", "danger");
                 }
             } catch (err) {
                 showToast("Connection failed.", "danger");
+            }
+        });
+
+        // ================= BIOMETRIC SCAN HOLD INTERACTIVE SCRIPT =================
+        function startBiometricScan(e) {
+            if (e) e.preventDefault(); // prevent zoom on double tap on mobile
+            const sensor = document.getElementById('biometric-trigger');
+            const progressFill = document.getElementById('biometric-progress');
+            const sensorHeader = document.getElementById('biometric-header');
+
+            sensor.className = "biometric-sensor-ring active";
+            sensorHeader.innerText = "Scanning Fingerprint...";
+            sensorHeader.style.color = "var(--success)";
+            
+            clearInterval(biometricHoldInterval);
+            biometricHoldInterval = setInterval(() => {
+                biometricProgress += 1.5; // reaches 100% in ~1.3 seconds
+                if (biometricProgress >= 100) {
+                    biometricProgress = 100;
+                    progressFill.style.width = "100%";
+                    clearInterval(biometricHoldInterval);
+                    biometricScanComplete();
+                } else {
+                    progressFill.style.width = `${biometricProgress}%`;
+                }
+            }, 20);
+        }
+
+        function stopBiometricScan() {
+            // If scanning hasn't reached 100%, reset it
+            if (biometricProgress < 100) {
+                clearInterval(biometricHoldInterval);
+                resetBiometricProgress();
+                const sensorHeader = document.getElementById('biometric-header');
+                sensorHeader.innerText = "Biometrics Interrupted";
+                sensorHeader.style.color = "var(--danger)";
+                document.getElementById('biometric-trigger').className = "biometric-sensor-ring error";
+                
+                setTimeout(() => {
+                    if (biometricProgress === 0) {
+                        sensorHeader.innerText = "Step 2: Biometric Verification";
+                        sensorHeader.style.color = "var(--success)";
+                        document.getElementById('biometric-trigger').className = "biometric-sensor-ring";
+                    }
+                }, 1500);
+            }
+        }
+
+        function resetBiometricProgress() {
+            biometricProgress = 0;
+            document.getElementById('biometric-progress').style.width = "0%";
+        }
+
+        function cancelBiometric() {
+            clearInterval(biometricHoldInterval);
+            pendingAdminSession = null;
+            switchState('login');
+        }
+
+        function biometricScanComplete() {
+            const sensor = document.getElementById('biometric-trigger');
+            const sensorHeader = document.getElementById('biometric-header');
+            const sensorDesc = document.getElementById('biometric-desc');
+
+            sensor.className = "biometric-sensor-ring active";
+            sensorHeader.innerText = "Verification Approved!";
+            sensorHeader.style.color = "var(--success)";
+            sensorDesc.innerHTML = `<span style="color:var(--success); font-weight:bold;">ACCESS GRANTED</span> • Session secure. Redirecting to ELLENKI dashboard...`;
+
+            if (pendingAdminSession) {
+                sessionStorage.setItem('isAdmin', 'true');
+                sessionStorage.setItem('adminName', `${pendingAdminSession.name} (${pendingAdminSession.designation})`);
+            }
+
+            // Haptic audio feedback or simple browser click sound could go here
+            showToast("Biometric verification complete! Redirecting...", "success");
+
+            setTimeout(() => {
+                window.location.href = '/admin-dashboard';
+            }, 1200);
+        }
+
+        // ================= PASSWORD RECOVERY FLOW =================
+        document.getElementById('form-forgot-email').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const gmail = document.getElementById('forgot-gmail').value.trim();
+
+            try {
+                const response = await fetch('/api/admin/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gmail })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast("OTP generated. Check Node.js terminal logs!", "success");
+                    document.getElementById('form-forgot-email').style.display = 'none';
+                    document.getElementById('form-forgot-reset').style.display = 'block';
+                    
+                    // Show OTP dev helper badge for quick local testing convenience
+                    if (result.devOtp) {
+                        document.getElementById('dev-otp-val').innerText = result.devOtp;
+                        document.getElementById('dev-otp-display').style.display = 'block';
+                    }
+                } else {
+                    showToast(result.message || "Email lookup failed.", "danger");
+                }
+            } catch (err) {
+                showToast("Request failed. Is server running?", "danger");
+            }
+        });
+
+        document.getElementById('form-forgot-reset').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const gmail = document.getElementById('forgot-gmail').value.trim();
+            const otp = document.getElementById('forgot-otp').value.trim();
+            const newPassword = document.getElementById('forgot-newpass').value;
+            const confirmPass = document.getElementById('forgot-confirmpass').value;
+
+            if (newPassword !== confirmPass) {
+                showToast("Passwords do not match.", "danger");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gmail, otp, newPassword })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast("Password updated! Please log in with new password.", "success");
+                    setTimeout(() => {
+                        switchState('login');
+                    }, 1500);
+                } else {
+                    showToast(result.message || "OTP verification failed.", "danger");
+                }
+            } catch (err) {
+                showToast("Reset failed. Connection error.", "danger");
             }
         });
     </script>

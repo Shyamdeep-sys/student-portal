@@ -451,3 +451,211 @@ tr:hover td {
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
 }
+
+/* ================= SECURE PORTAL EXTENSIONS ================= */
+
+/* ID Card Laser Scan HUD */
+.scanner-hud-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-glow);
+}
+
+.scanner-hud-laser {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, rgba(16, 185, 129, 0), rgba(16, 185, 129, 0.8) 50%, rgba(16, 185, 129, 0));
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.8), 0 0 20px rgba(16, 185, 129, 0.4);
+    animation: laserSweep 2s ease-in-out infinite;
+    z-index: 5;
+}
+
+@keyframes laserSweep {
+    0% { top: 0%; }
+    50% { top: 100%; }
+    100% { top: 0%; }
+}
+
+.scanner-status-badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(10, 15, 29, 0.85);
+    border: 1px solid var(--success);
+    color: var(--success);
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-sm);
+    z-index: 6;
+    font-family: monospace;
+    letter-spacing: 0.1em;
+    animation: pulseScanText 1.5s infinite;
+}
+
+@keyframes pulseScanText {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+/* Step 2 Fingerprint Biometric Dialog Screen */
+.biometric-sensor-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+    text-align: center;
+}
+
+.biometric-sensor-ring {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.05);
+    border: 2px solid rgba(16, 185, 129, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-bottom: 2rem;
+    transition: var(--transition);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.biometric-sensor-ring::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px dashed rgba(16, 185, 129, 0.6);
+    animation: rotateRing 8s linear infinite;
+}
+
+.biometric-sensor-ring.active {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: var(--success);
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.4), inset 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.biometric-sensor-ring.error {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: var(--danger);
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.4), inset 0 0 15px rgba(239, 68, 68, 0.2);
+}
+
+.biometric-sensor-icon {
+    width: 54px;
+    height: 54px;
+    fill: var(--text-muted);
+    transition: var(--transition);
+}
+
+.biometric-sensor-ring.active .biometric-sensor-icon {
+    fill: var(--success);
+    transform: scale(1.05);
+    animation: biometricPulse 1.2s infinite;
+}
+
+.biometric-sensor-ring.error .biometric-sensor-icon {
+    fill: var(--danger);
+}
+
+@keyframes rotateRing {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes biometricPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(16, 185, 129, 0.8)); }
+    50% { transform: scale(1.08); filter: drop-shadow(0 0 12px rgba(16, 185, 129, 1)); }
+}
+
+.biometric-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 999px;
+    margin-top: 1rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.biometric-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--success-grad);
+    box-shadow: 0 0 8px var(--success);
+    transition: width 0.1s linear;
+}
+
+/* Premium Date Search bar on Dashboards */
+.date-search-container {
+    background: rgba(18, 24, 43, 0.4);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    backdrop-filter: blur(10px);
+}
+
+.date-search-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ffffff;
+    font-family: var(--font-outfit);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.date-search-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.date-search-input {
+    background: rgba(10, 15, 29, 0.8);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    color: #ffffff;
+    font-family: var(--font-jakarta);
+    font-size: 0.85rem;
+    outline: none;
+    transition: var(--transition);
+}
+
+.date-search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 8px rgba(0, 198, 251, 0.2);
+}
+
+/* Developer OTP Badge style */
+.dev-otp-badge {
+    margin-top: 1rem;
+    padding: 0.6rem;
+    background: rgba(245, 158, 11, 0.05);
+    border: 1px dashed rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    text-align: center;
+    font-family: monospace;
+}
+

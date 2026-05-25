@@ -226,6 +226,17 @@
                 <button class="filter-btn" onclick="setFilter('photo', this)">Photo Gallery</button>
             </div>
 
+            <!-- SECURE DATE SEARCH FILTER BAR -->
+            <div class="date-search-container animate-fade-in">
+                <div class="date-search-title">
+                    <span>📅</span> Filter listings by Date of Upload
+                </div>
+                <div class="date-search-controls">
+                    <input type="date" id="search-date-input" class="date-search-input" onchange="filterFeedByDate()">
+                    <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 34px;" onclick="clearDateSearch()">Clear Filter</button>
+                </div>
+            </div>
+
             <!-- FEED RESULTS -->
             <div class="feed-container animate-fade-in" id="portal-feed-view">
                 <!-- Academic feeds dynamically load here -->
